@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:fitsSystemWindows="true">
+
+    <!--maps layout-->
+    <include
+        layout="@layout/activity_maps"/>
+
+    <!--bottom sheet layout-->
+    <include
+        layout="@layout/content_bottomsheet" />
+
+
+    <!--<android.support.design.widget.FloatingActionButton-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_gravity="end"-->
+        <!--android:layout_marginRight="16dp"-->
+        <!--android:elevation="16dp"-->
+        <!--app:layout_anchor="@id/ll"-->
+        <!--app:layout_anchorGravity="end"-->
+        <!--android:id="@+id/floatingActionButton"/>-->
+
+
+</android.support.design.widget.CoordinatorLayout>
