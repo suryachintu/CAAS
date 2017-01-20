@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">CAAS-NITD</string>
     <string name="title_activity_maps">NIT Delhi</string>
+    <string name="title_activity_login">Login</string>
+    <string name="login">Login</string>
+    <string name="sigu_up">Sign Up</string>
 </resources>
