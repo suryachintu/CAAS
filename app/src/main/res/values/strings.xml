@@ -4,4 +4,6 @@
     <string name="title_activity_login">Login</string>
     <string name="login">Login</string>
     <string name="sigu_up">Sign Up</string>
+    <string name="department_name">Electronics and Communication Engineering\nNational Institute of Technology Delhi</string>
+    <string name="dummy_room">Room No : 208</string>
 </resources>

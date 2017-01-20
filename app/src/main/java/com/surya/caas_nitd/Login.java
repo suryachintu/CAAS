@@ -2,6 +2,7 @@ package com.surya.caas_nitd;
 
 import android.animation.Animator;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -26,6 +27,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
+import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 public class Login extends AppCompatActivity {
 
@@ -41,11 +44,9 @@ public class Login extends AppCompatActivity {
     EditText rollField;
     @BindView(R.id.fab)
     FloatingActionButton fab;
-    @BindView(R.id.empty_view)
-    View myView;
     @BindView(R.id.content_login)
     RelativeLayout relativeLayout;
-            ;
+            
     private static final String TAG = Login.class.getSimpleName();
 
     @Override
@@ -54,9 +55,10 @@ public class Login extends AppCompatActivity {
         setContentView(R.layout.activity_login);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
         ButterKnife.bind(this);
         mAuth = FirebaseAuth.getInstance();
-        myView.setVisibility(View.GONE);
+
     }
 
     @OnClick({R.id.login_btn,R.id.fab})
@@ -64,8 +66,8 @@ public class Login extends AppCompatActivity {
 
         if (view.getId() == R.id.fab){
             //show circular reveal effect with new user or existing user
-            int cx = myView.getWidth();
-            int cy = myView.getHeight();
+            int cx = relativeLayout.getWidth();
+            int cy = relativeLayout.getHeight();
             // get the final radius for the clipping circle
             float finalRadius = (float) Math.hypot(cx, cy);
 
@@ -73,20 +75,20 @@ public class Login extends AppCompatActivity {
             Animator anim =
                     null;
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-                anim = ViewAnimationUtils.createCircularReveal(myView, cx, cy, 0, finalRadius);
+                anim = ViewAnimationUtils.createCircularReveal(relativeLayout, cx, cy, 0, finalRadius);
 
                 // make the view visible and start the animation
                 view.setVisibility(View.VISIBLE);
                 anim.setDuration(400);
+
+                anim.start();
                 anim.addListener(new Animator.AnimatorListener() {
                     @Override
                     public void onAnimationStart(Animator animator) {
-                        myView.setVisibility(View.VISIBLE);
                     }
 
                     @Override
                     public void onAnimationEnd(Animator animator) {
-                        myView.setVisibility(View.GONE);
                         if (login_btn.getText().toString().equals(getString(R.string.login))){
                             rollField.setVisibility(View.VISIBLE);
                             login_btn.setText(getString(R.string.sigu_up));
@@ -110,7 +112,6 @@ public class Login extends AppCompatActivity {
 
                     }
                 });
-                anim.start();
             }
 
 

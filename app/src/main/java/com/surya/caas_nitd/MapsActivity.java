@@ -1,5 +1,6 @@
 package com.surya.caas_nitd;
 
+import android.content.Context;
 import android.content.Intent;
 import android.nfc.Tag;
 import android.support.annotation.NonNull;
@@ -24,21 +25,46 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import butterknife.BindColor;
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
+import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private static final String TAG = MapsActivity.class.getSimpleName();
     private GoogleMap mMap;
     private BottomSheetBehavior bottomSheetBehavior;
     private FirebaseAuth mAuth;
+    @BindView(R.id.room_linearlayout)
+    LinearLayout linearLayout;
+    @BindView(R.id.available_textview)
+    TextView logout;
+    @BindView(R.id.bottomsheet)
+    RelativeLayout relativeLayout;
+    @BindColor(R.color.red_color)
+    int red;
+    @BindColor(R.color.white_color)
+    int white;
+    @BindView(R.id.room_no)
+    TextView room_number;
+    @BindView(R.id.department_name)
+    TextView department_name;
+    @BindColor(R.color.color_black)
+    int black;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.maps_layout);
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-
+        CalligraphyConfig.initDefault(new CalligraphyConfig.Builder()
+                .setDefaultFontPath("fonts/ShareTech.ttf")
+                .setFontAttrId(R.attr.fontPath)
+                .build()
+        );
+        ButterKnife.bind(this);
         mAuth = FirebaseAuth.getInstance();
-
 
         FirebaseUser user = mAuth.getCurrentUser();
 
@@ -50,13 +76,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             finish();
         }
 
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
-
-
-
-        TextView logout = (TextView)findViewById(R.id.available_textview);
-
 
         logout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -72,9 +94,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         bottomSheetBehavior = BottomSheetBehavior.from(findViewById(R.id.bottomsheet));
 
-        final RelativeLayout linearLayout = (RelativeLayout) findViewById(R.id.bottomsheet);
-
-        linearLayout.setOnClickListener(new View.OnClickListener() {
+        relativeLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
@@ -82,6 +102,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
 
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+
+
         bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState) {
@@ -89,26 +111,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 switch (newState){
 
                     case BottomSheetBehavior.STATE_COLLAPSED:
-                        Log.e(TAG,"collapsed");
+                            linearLayout.setBackgroundColor(white);
+                            room_number.setTextColor(black);
+                            department_name.setTextColor(black);
                         break;
                     case BottomSheetBehavior.STATE_DRAGGING:
-                        Log.e(TAG,"dragging");
                         break;
                     case BottomSheetBehavior.STATE_EXPANDED:
-                        Log.e(TAG,"expanded");
+                            linearLayout.setBackgroundColor(red);
+                            room_number.setTextColor(white);
+                            department_name.setTextColor(white);
                         break;
                     case BottomSheetBehavior.STATE_HIDDEN:
-                        Log.e(TAG,"hidden");
                         break;
 
                     case BottomSheetBehavior.STATE_SETTLING:
-                        Log.e(TAG,"setting");
                         break;
                     default:
 
-
                 }
-
 
             }
 
@@ -147,7 +168,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             .zoom(19)
                             .build();
         mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cp));
-        Log.e(TAG,mMap.getMaxZoomLevel() + "");
+//        Log.e(TAG,mMap.getMaxZoomLevel() + "");
 
         //set the click listener to marker
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
@@ -165,5 +186,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
             }
         });
+    }
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase));
     }
 }
