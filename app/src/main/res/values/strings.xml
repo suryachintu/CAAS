@@ -6,4 +6,9 @@
     <string name="sigu_up">Sign Up</string>
     <string name="department_name">Electronics and Communication Engineering\nNational Institute of Technology Delhi</string>
     <string name="dummy_room">Room No : 208</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="menu_btn">Menu Button</string>
+
 </resources>

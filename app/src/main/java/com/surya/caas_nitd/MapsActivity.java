@@ -2,16 +2,22 @@ package com.surya.caas_nitd;
 
 import android.content.Context;
 import android.content.Intent;
-import android.nfc.Tag;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetBehavior;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.widget.CardView;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -28,10 +34,11 @@ import com.google.firebase.auth.FirebaseUser;
 import butterknife.BindColor;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,NavigationView.OnNavigationItemSelectedListener {
 
     private static final String TAG = MapsActivity.class.getSimpleName();
     private GoogleMap mMap;
@@ -42,7 +49,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @BindView(R.id.available_textview)
     TextView logout;
     @BindView(R.id.bottomsheet)
-    RelativeLayout relativeLayout;
+    FrameLayout frameLayout;
     @BindColor(R.color.red_color)
     int red;
     @BindColor(R.color.white_color)
@@ -53,16 +60,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     TextView department_name;
     @BindColor(R.color.color_black)
     int black;
+    @BindView(R.id.nav_view)
+    NavigationView navigationView;
+    @BindView(R.id.drawer_layout)
+    DrawerLayout drawer;
+    @BindView(R.id.menu_btn)
+    ImageView menu_btn;
+    @BindView(R.id.card_view)
+    CardView mCardView;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.maps_layout);
+
         CalligraphyConfig.initDefault(new CalligraphyConfig.Builder()
                 .setDefaultFontPath("fonts/ShareTech.ttf")
                 .setFontAttrId(R.attr.fontPath)
                 .build()
         );
+
         ButterKnife.bind(this);
         mAuth = FirebaseAuth.getInstance();
 
@@ -75,6 +93,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             startActivity(intent);
             finish();
         }
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.setDrawerListener(toggle);
+        toggle.syncState();
+
+        navigationView.setNavigationItemSelectedListener(this);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -94,7 +118,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         bottomSheetBehavior = BottomSheetBehavior.from(findViewById(R.id.bottomsheet));
 
-        relativeLayout.setOnClickListener(new View.OnClickListener() {
+        frameLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
@@ -103,6 +127,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
 
+        //animation
+        final Animation fadeOut = AnimationUtils.loadAnimation(this,R.anim.fade_out);
+        final Animation fadeIn = AnimationUtils.loadAnimation(this,R.anim.fade_in);
 
         bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
@@ -111,18 +138,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 switch (newState){
 
                     case BottomSheetBehavior.STATE_COLLAPSED:
-                            linearLayout.setBackgroundColor(white);
-                            room_number.setTextColor(black);
-                            department_name.setTextColor(black);
+//                            linearLayout.setBackgroundColor(white);
+//                            room_number.setTextColor(black);
+//                            department_name.setTextColor(black);
+                            mCardView.setVisibility(View.VISIBLE);
+                            mCardView.startAnimation(fadeIn);
+
                         break;
                     case BottomSheetBehavior.STATE_DRAGGING:
                         break;
                     case BottomSheetBehavior.STATE_EXPANDED:
-                            linearLayout.setBackgroundColor(red);
-                            room_number.setTextColor(white);
-                            department_name.setTextColor(white);
+//                            linearLayout.setBackgroundColor(red);
+//                            room_number.setTextColor(white);
+//                            department_name.setTextColor(white);
+                            mCardView.startAnimation(fadeOut);
+                            mCardView.setVisibility(View.GONE);
                         break;
                     case BottomSheetBehavior.STATE_HIDDEN:
+
+                        mCardView.setVisibility(View.VISIBLE);
+                        mCardView.startAnimation(fadeIn);
                         break;
 
                     case BottomSheetBehavior.STATE_SETTLING:
@@ -157,7 +192,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
+        mMap.getUiSettings().setCompassEnabled(false);
+        mMap.getUiSettings().setMapToolbarEnabled(false);
         // Add a marker in Sydney and move the camera
         LatLng sydney = new LatLng(28.8428, 77.1050);
         mMap.addMarker(new MarkerOptions().position(sydney).title("NIT Delhi"));
@@ -191,5 +227,46 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     protected void attachBaseContext(Context newBase) {
         super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase));
+    }
+
+    @OnClick(R.id.menu_btn)
+    public void openDrawer(){
+        drawer.openDrawer(GravityCompat.START);
+    }
+
+
+    @Override
+    public void onBackPressed() {
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        // Handle navigation view item clicks here.
+        int id = item.getItemId();
+
+        if (id == R.id.nav_camera) {
+            // Handle the camera action
+        } else if (id == R.id.nav_gallery) {
+
+        } else if (id == R.id.nav_slideshow) {
+
+        } else if (id == R.id.nav_manage) {
+
+        } else if (id == R.id.nav_share) {
+
+        } else if (id == R.id.nav_send) {
+
+        }
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
     }
 }
