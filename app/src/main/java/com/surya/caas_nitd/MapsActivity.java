@@ -2,6 +2,7 @@ package com.surya.caas_nitd;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.NavigationView;
@@ -25,11 +26,11 @@ import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -40,9 +41,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import butterknife.BindColor;
 import butterknife.BindView;
@@ -81,9 +79,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     ImageView menu_btn;
     @BindView(R.id.card_view)
     CardView mCardView;
-    /*@BindView(R.id.tt_recycler_view)
-    RecyclerView recyclerView;
-    */@BindView(R.id.devices_recyclerview)
+    @BindView(R.id.devices_recyclerview)
     RecyclerView deviceRecycler;
 
     private DatabaseReference mDatabaseReference;
@@ -198,13 +194,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
-        //set the recylerview
-    /*    recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(new TimeTableAdapter(this));*/
-        //set the recylerview
         deviceRecycler.setLayoutManager(new LinearLayoutManager(this));
-        deviceRecycler.setAdapter(new DeviceAdapter(this));
-
         mapFragment.getMapAsync(this);
 
 
@@ -255,8 +245,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
 
         LatLng sydney = new LatLng(28.8428, 77.1050);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("NIT Delhi"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+//        mMap.addMarker(new MarkerOptions().position(sydney).title("NIT Delhi"));
+//        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
 //        CameraPosition cp = CameraPosition.builder()
 //                            .target(sydney)
 //                            .tilt(70)
@@ -271,6 +261,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public boolean onMarkerClick(Marker marker) {
                 //open the bottom sheets
                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                room_number.setText(marker.getTitle());
+                getDevicesData(marker.getTitle());
+                Log.e(TAG,marker.toString() + "**"+ marker.getTitle());
                 return false;
             }
         });
@@ -282,6 +275,34 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             }
         });
+    }
+
+    private void getDevicesData(String title) {
+
+
+        FirebaseRecyclerAdapter<DeviceModel,DevicesViewHolder> adapter;
+
+        adapter = new FirebaseRecyclerAdapter<DeviceModel, DevicesViewHolder>(DeviceModel.class,
+                R.layout.devices_list_item, DevicesViewHolder.class,mDatabaseReference.child("Devices").child(title)) {
+
+            boolean flag = true;
+
+            @Override
+            protected void populateViewHolder(DevicesViewHolder viewHolder, DeviceModel model, int position) {
+                viewHolder.device_name.setText(model.getDeviceName());
+                viewHolder.device_state.setChecked(Boolean.parseBoolean(model.isState()));
+                Log.e("xxx","pop" + model.isState());
+
+                if (flag){
+                    department_name.setText(model.getRoomName());
+                    flag = false;
+                }
+            }
+        };
+
+        deviceRecycler.setAdapter(adapter);
+
+
     }
 
     @Override
@@ -300,7 +321,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        } else {
+        }else if (bottomSheetBehavior.getState() != BottomSheetBehavior.STATE_HIDDEN){
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        }
+        else {
             super.onBackPressed();
         }
     }
@@ -325,6 +349,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    public static class DevicesViewHolder extends RecyclerView.ViewHolder{
+        @BindView(R.id.device_name) TextView device_name;
+        @BindView(R.id.switch_state)
+        Switch device_state;
+        public DevicesViewHolder(View itemView) {
+            super(itemView);
+            ButterKnife.bind(this,itemView);
+        }
     }
 
 
