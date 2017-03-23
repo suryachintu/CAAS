@@ -11,6 +11,10 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.CardView;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
@@ -18,6 +22,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -30,6 +35,14 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import butterknife.BindColor;
 import butterknife.BindView;
@@ -68,12 +81,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     ImageView menu_btn;
     @BindView(R.id.card_view)
     CardView mCardView;
+    /*@BindView(R.id.tt_recycler_view)
+    RecyclerView recyclerView;
+    */@BindView(R.id.devices_recyclerview)
+    RecyclerView deviceRecycler;
 
+    private DatabaseReference mDatabaseReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.maps_layout);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle(R.string.app_name);
+
+
 
         CalligraphyConfig.initDefault(new CalligraphyConfig.Builder()
                 .setDefaultFontPath("fonts/ShareTech.ttf")
@@ -83,16 +106,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         ButterKnife.bind(this);
         mAuth = FirebaseAuth.getInstance();
-
         FirebaseUser user = mAuth.getCurrentUser();
-
         if (user == null){
-
             Intent intent = new Intent(MapsActivity.this,Login.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
             finish();
         }
+        mDatabaseReference = FirebaseDatabase.getInstance().getReference();
+
+
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
@@ -103,6 +126,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
+
 
         logout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -174,6 +198,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
+        //set the recylerview
+    /*    recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(new TimeTableAdapter(this));*/
+        //set the recylerview
+        deviceRecycler.setLayoutManager(new LinearLayoutManager(this));
+        deviceRecycler.setAdapter(new DeviceAdapter(this));
+
         mapFragment.getMapAsync(this);
 
 
@@ -195,16 +226,44 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.getUiSettings().setCompassEnabled(false);
         mMap.getUiSettings().setMapToolbarEnabled(false);
         // Add a marker in Sydney and move the camera
+
+        final LatLng[] newLocation = new LatLng[1];
+        Log.e(TAG,"On map ready");
+        mDatabaseReference.child("rooms").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Iterable<DataSnapshot> iterator = dataSnapshot.getChildren();
+
+
+                while (iterator.iterator().hasNext()){
+                    DataSnapshot x =iterator.iterator().next();
+
+                    String title = x.getKey();
+                    double lat = Double.parseDouble(x.getValue().toString().split(",")[0]);
+                    double lng = Double.parseDouble(x.getValue().toString().split(",")[1]);
+                    newLocation[0] = new LatLng(lat,lng);
+                    mMap.addMarker(new MarkerOptions().position(newLocation[0]).title(title));
+                    mMap.moveCamera(CameraUpdateFactory.newLatLng(newLocation[0]));
+                    Log.e("xxx",x.getValue().toString());
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
         LatLng sydney = new LatLng(28.8428, 77.1050);
         mMap.addMarker(new MarkerOptions().position(sydney).title("NIT Delhi"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-        CameraPosition cp = CameraPosition.builder()
-                            .target(sydney)
-                            .tilt(70)
-                            .zoom(19)
-                            .build();
-        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cp));
-//        Log.e(TAG,mMap.getMaxZoomLevel() + "");
+//        CameraPosition cp = CameraPosition.builder()
+//                            .target(sydney)
+//                            .tilt(70)
+//                            .zoom(19)
+//                            .build();
+//        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cp));
+//        Log.e(TAG,mMap.getMaxZoomLevel() + "");*/
 
         //set the click listener to marker
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
@@ -220,6 +279,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onMapClick(LatLng latLng) {
                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+
             }
         });
     }
@@ -251,22 +311,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
+        if (id == R.id.nav_profile) {
             // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
+        } else if (id == R.id.nav_attendance) {
 
-        } else if (id == R.id.nav_slideshow) {
+        } else if (id == R.id.nav_about) {
 
-        } else if (id == R.id.nav_manage) {
+        } else if (id == R.id.nav_settings) {
 
         } else if (id == R.id.nav_share) {
 
-        } else if (id == R.id.nav_send) {
-
         }
-
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+
 }

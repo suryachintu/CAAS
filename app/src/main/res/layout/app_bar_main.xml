@@ -9,15 +9,25 @@
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="56dp"
         android:theme="@style/AppTheme.AppBarOverlay">
+
+
+        <ImageView
+            android:id="@+id/menu_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="12dp"
+            android:layout_gravity="start|center_vertical"
+            android:contentDescription="@string/menu_btn"
+            android:src="@drawable/ic_menu_black_24dp"/>
+
 
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
-            android:visibility="gone"
             app:popupTheme="@style/AppTheme.PopupOverlay" />
 
 
@@ -32,32 +42,32 @@
         android:background="@android:color/white"
         android:layout_margin="16dp">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
+        <!--<LinearLayout-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:orientation="horizontal">-->
 
-            <ImageView
-                android:id="@+id/menu_btn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="12dp"
-                android:layout_gravity="center"
-                android:contentDescription="@string/menu_btn"
-                android:src="@drawable/ic_menu_black_24dp"/>
+            <!--<ImageView-->
+                <!--android:id="@+id/menu_btn"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_margin="12dp"-->
+                <!--android:layout_gravity="center"-->
+                <!--android:contentDescription="@string/menu_btn"-->
+                <!--android:src="@drawable/ic_menu_black_24dp"/>-->
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/app_name"
-                android:textStyle="bold"
-                android:layout_marginStart="16dp"
-                android:layout_marginLeft="16dp"
-                android:textSize="20sp"
-                android:layout_gravity="center"
-                android:textColor="@color/color_dark_blue"/>
+            <!--<TextView-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:text="@string/app_name"-->
+                <!--android:textStyle="bold"-->
+                <!--android:layout_marginStart="16dp"-->
+                <!--android:layout_marginLeft="16dp"-->
+                <!--android:textSize="20sp"-->
+                <!--android:layout_gravity="center"-->
+                <!--android:textColor="@color/color_dark_blue"/>-->
 
-        </LinearLayout>
+        <!--</LinearLayout>-->
 
     </android.support.v7.widget.CardView>
 
