@@ -21,7 +21,7 @@ public class DeviceModel {
         return deviceName;
     }
 
-    public String isState() {
+    public String getStatus() {
         return status;
     }
 
@@ -29,4 +29,12 @@ public class DeviceModel {
         return roomName;
     }
 
+    @Override
+    public String toString() {
+        return "DeviceModel{" +
+                "deviceName='" + deviceName + '\'' +
+                ", status='" + status + '\'' +
+                ", roomName='" + roomName + '\'' +
+                '}';
+    }
 }

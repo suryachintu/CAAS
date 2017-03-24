@@ -290,8 +290,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             protected void populateViewHolder(DevicesViewHolder viewHolder, DeviceModel model, int position) {
                 viewHolder.device_name.setText(model.getDeviceName());
-                viewHolder.device_state.setChecked(Boolean.parseBoolean(model.isState()));
-                Log.e("xxx","pop" + model.isState());
+                viewHolder.device_state.setChecked(Boolean.parseBoolean(model.getStatus()));
+                Log.e("xxx","pop" + model.toString());
 
                 if (flag){
                     department_name.setText(model.getRoomName());
