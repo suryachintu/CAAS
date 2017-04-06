@@ -9,6 +9,7 @@
     app:layout_behavior="@string/bottom_sheet_behavior"
     tools:showIn="@layout/maps_layout"
     app:behavior_hideable="true"
+    app:behavior_peekHeight="140dp"
     android:layout_marginTop="30dp"
     android:elevation="16dp"
     android:background="@android:color/white">

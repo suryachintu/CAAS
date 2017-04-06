@@ -2,6 +2,7 @@ package com.surya.caas_nitd;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetBehavior;
@@ -11,6 +12,7 @@ import android.os.Bundle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -36,11 +38,16 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import butterknife.BindColor;
 import butterknife.BindView;
@@ -49,7 +56,7 @@ import butterknife.OnClick;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,NavigationView.OnNavigationItemSelectedListener {
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,NavigationView.OnNavigationItemSelectedListener {
 
     private static final String TAG = MapsActivity.class.getSimpleName();
     private GoogleMap mMap;
@@ -83,6 +90,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     RecyclerView deviceRecycler;
 
     private DatabaseReference mDatabaseReference;
+    private HashMap<String,String> mRoomDetailMap;
+    private DeviceAdapter mAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,9 +99,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         setContentView(R.layout.maps_layout);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle(R.string.app_name);
-
-
+        setSupportActionBar(toolbar);
 
         CalligraphyConfig.initDefault(new CalligraphyConfig.Builder()
                 .setDefaultFontPath("fonts/ShareTech.ttf")
@@ -110,7 +117,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             finish();
         }
         mDatabaseReference = FirebaseDatabase.getInstance().getReference();
-
 
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -158,9 +164,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 switch (newState){
 
                     case BottomSheetBehavior.STATE_COLLAPSED:
-//                            linearLayout.setBackgroundColor(white);
-//                            room_number.setTextColor(black);
-//                            department_name.setTextColor(black);
                             mCardView.setVisibility(View.VISIBLE);
                             mCardView.startAnimation(fadeIn);
 
@@ -168,9 +171,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     case BottomSheetBehavior.STATE_DRAGGING:
                         break;
                     case BottomSheetBehavior.STATE_EXPANDED:
-//                            linearLayout.setBackgroundColor(red);
-//                            room_number.setTextColor(white);
-//                            department_name.setTextColor(white);
                             mCardView.startAnimation(fadeOut);
                             mCardView.setVisibility(View.GONE);
                         break;
@@ -195,8 +195,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
 
         deviceRecycler.setLayoutManager(new LinearLayoutManager(this));
+        mRoomDetailMap = new HashMap<>();
+        mAdapter = new DeviceAdapter(this,mRoomDetailMap);
+        deviceRecycler.setAdapter(mAdapter);
         mapFragment.getMapAsync(this);
-
 
     }
 
@@ -216,44 +218,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.getUiSettings().setCompassEnabled(false);
         mMap.getUiSettings().setMapToolbarEnabled(false);
         // Add a marker in Sydney and move the camera
-
-        final LatLng[] newLocation = new LatLng[1];
         Log.e(TAG,"On map ready");
-        mDatabaseReference.child("rooms").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                Iterable<DataSnapshot> iterator = dataSnapshot.getChildren();
-
-
-                while (iterator.iterator().hasNext()){
-                    DataSnapshot x =iterator.iterator().next();
-
-                    String title = x.getKey();
-                    double lat = Double.parseDouble(x.getValue().toString().split(",")[0]);
-                    double lng = Double.parseDouble(x.getValue().toString().split(",")[1]);
-                    newLocation[0] = new LatLng(lat,lng);
-                    mMap.addMarker(new MarkerOptions().position(newLocation[0]).title(title));
-                    mMap.moveCamera(CameraUpdateFactory.newLatLng(newLocation[0]));
-                    Log.e("xxx",x.getValue().toString());
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
 
         LatLng sydney = new LatLng(28.8428, 77.1050);
-//        mMap.addMarker(new MarkerOptions().position(sydney).title("NIT Delhi"));
-//        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-//        CameraPosition cp = CameraPosition.builder()
-//                            .target(sydney)
-//                            .tilt(70)
-//                            .zoom(19)
-//                            .build();
-//        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cp));
-//        Log.e(TAG,mMap.getMaxZoomLevel() + "");*/
+        mMap.addMarker(new MarkerOptions().position(sydney).title("NIT Delhi"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+
+        getRoomData();
 
         //set the click listener to marker
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
@@ -277,31 +248,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
     }
 
-    private void getDevicesData(String title) {
+    private void getDevicesData(final String title) {
 
-
-        FirebaseRecyclerAdapter<DeviceModel,DevicesViewHolder> adapter;
-
-        adapter = new FirebaseRecyclerAdapter<DeviceModel, DevicesViewHolder>(DeviceModel.class,
-                R.layout.devices_list_item, DevicesViewHolder.class,mDatabaseReference.child("Devices").child(title)) {
-
-            boolean flag = true;
-
+        mRoomDetailMap.clear();
+        mAdapter.notifyDataSetChanged();
+        mDatabaseReference.child("Rooms").child(title).addValueEventListener(new ValueEventListener() {
             @Override
-            protected void populateViewHolder(DevicesViewHolder viewHolder, DeviceModel model, int position) {
-                viewHolder.device_name.setText(model.getDeviceName());
-                viewHolder.device_state.setChecked(Boolean.parseBoolean(model.getStatus()));
-                Log.e("xxx","pop" + model.toString());
-
-                if (flag){
-                    department_name.setText(model.getRoomName());
-                    flag = false;
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot snapshot :
+                        dataSnapshot.getChildren()) {
+                    mRoomDetailMap.put(snapshot.getKey() + "," + title, snapshot.getValue().toString());
+                    Log.e(TAG, dataSnapshot.toString());
+                    mAdapter.notifyDataSetChanged();
                 }
             }
-        };
 
-        deviceRecycler.setAdapter(adapter);
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
 
+            }
+        });
 
     }
 
@@ -351,15 +317,44 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return true;
     }
 
-    public static class DevicesViewHolder extends RecyclerView.ViewHolder{
-        @BindView(R.id.device_name) TextView device_name;
-        @BindView(R.id.switch_state)
-        Switch device_state;
-        public DevicesViewHolder(View itemView) {
-            super(itemView);
-            ButterKnife.bind(this,itemView);
-        }
+    public void getRoomData() {
+
+        mDatabaseReference.child("Rooms").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot snapshot :
+                        dataSnapshot.getChildren()) {
+                    for (DataSnapshot snap :
+                            snapshot.getChildren()) {
+                        if (snap.getKey().equals("Location")){
+                            String p = snap.getValue().toString();
+                            addMarkers(snapshot.getKey(),p.substring(1,p.length()-2));
+                        }
+                    }
+                }
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+
     }
 
+    private void addMarkers(String key, String location) {
+
+        if (mMap == null)
+            return;
+        String[] x = location.split(",");
+        double lat = Double.parseDouble(x[0].split("=")[1]);
+        double lng = Double.parseDouble(x[1].split("=")[1]);
+        LatLng latLng = new LatLng(lat,lng);
+        mMap.addMarker(new MarkerOptions().position(latLng).title(key));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+
+    }
 
 }
