@@ -59,6 +59,7 @@ public class Login extends AppCompatActivity {
         ButterKnife.bind(this);
         mAuth = FirebaseAuth.getInstance();
 
+
     }
 
     @OnClick({R.id.login_btn,R.id.fab})
@@ -125,13 +126,11 @@ public class Login extends AppCompatActivity {
 
     private void authenticateUser() {
 
-
         final Dialog dialog = new Dialog(this);
         dialog.setContentView(R.layout.authentication_dialog);
         dialog.setTitle("Loading...");
         dialog.setCancelable(false);
         dialog.show();
-
 
         String username = usernameField.getText().toString();
         String password = passwordField.getText().toString();
@@ -160,6 +159,7 @@ public class Login extends AppCompatActivity {
                             if (!task.isSuccessful()) {
                                 Toast.makeText(Login.this, "Authentication failed.",
                                         Toast.LENGTH_SHORT).show();
+                                Log.e(TAG,task.getException().getMessage() + "");
                             } else {
                                 Intent intent = new Intent(Login.this, MapsActivity.class);
                                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -203,7 +203,7 @@ public class Login extends AppCompatActivity {
 
     private boolean checkPassword(String password) {
 
-        if (password.length()<8){
+        if (password.length()< 8){
             passwordField.setError("password must be 8 characters");
             return false;
         }else {
@@ -214,10 +214,10 @@ public class Login extends AppCompatActivity {
 
     private boolean checkEmail(String email) {
 
-        if (android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+        if (android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches() /*&& email.contains("@nitdelhi.ac.in")*/) {
             return true;
         } else {
-            passwordField.setError("Check Email");
+            usernameField.setError("Check Email");
             return false;
         }
     }

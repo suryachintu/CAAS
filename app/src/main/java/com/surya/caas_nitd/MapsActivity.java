@@ -36,6 +36,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.common.collect.Maps;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -64,8 +65,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private FirebaseAuth mAuth;
     @BindView(R.id.room_linearlayout)
     LinearLayout linearLayout;
-    @BindView(R.id.available_textview)
-    TextView logout;
     @BindView(R.id.bottomsheet)
     FrameLayout frameLayout;
     @BindColor(R.color.red_color)
@@ -128,19 +127,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
-
-
-        logout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mAuth.signOut();
-                Intent intent = new Intent(MapsActivity.this,Login.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
-                finish();
-            }
-        });
-
 
         bottomSheetBehavior = BottomSheetBehavior.from(findViewById(R.id.bottomsheet));
 
@@ -305,13 +291,22 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             // Handle the camera action
         } else if (id == R.id.nav_attendance) {
 
+            startActivity(new Intent(MapsActivity.this,Attandance.class));
+
         } else if (id == R.id.nav_about) {
 
         } else if (id == R.id.nav_settings) {
 
         } else if (id == R.id.nav_share) {
 
+        } else if (id == R.id.nav_logout) {
+
+            mAuth.signOut();
+            Intent intent = new Intent(this,Login.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
         }
+
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
@@ -353,7 +348,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         double lng = Double.parseDouble(x[1].split("=")[1]);
         LatLng latLng = new LatLng(lat,lng);
         mMap.addMarker(new MarkerOptions().position(latLng).title(key));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+//        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
 
     }
 

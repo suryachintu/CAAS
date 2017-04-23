@@ -49,6 +49,15 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.surya.caas_nitd.MapsActivity" />
         </activity>
+        <activity
+            android:name=".Attandance"
+            android:label="@string/title_activity_attandance"
+            android:parentActivityName=".MapsActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.surya.caas_nitd.MapsActivity" />
+        </activity>
     </application>
 
 </manifest>
