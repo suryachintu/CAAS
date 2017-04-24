@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -55,6 +56,13 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.DeviceView
         String[] p = data.get(position).split("=");
         final String[] devicename = p[0].split(",");
         holder.device_name.setText(devicename[0]);
+
+        if (devicename[0].contains("F"))
+            holder.deviceImage.setImageResource(R.drawable.ic_action_toys);
+        else
+            holder.deviceImage.setImageResource(R.drawable.ic_action_lightbulb_outline);
+
+
         holder.device_state.setChecked(!p[1].equals("0"));
 
         holder.device_state.setOnClickListener(new View.OnClickListener() {
@@ -85,6 +93,8 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.DeviceView
         TextView device_name;
         @BindView(R.id.switch_state)
         Switch device_state;
+        @BindView(R.id.device_image)
+        ImageView deviceImage;
         public DeviceViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this,itemView);

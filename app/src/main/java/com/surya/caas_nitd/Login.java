@@ -214,10 +214,10 @@ public class Login extends AppCompatActivity {
 
     private boolean checkEmail(String email) {
 
-        if (android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches() /*&& email.contains("@nitdelhi.ac.in")*/) {
+        if (android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches() && email.contains("@nitdelhi.ac.in")) {
             return true;
         } else {
-            usernameField.setError("Check Email");
+            usernameField.setError("email should contain ....@nitdelhi.ac.in");
             return false;
         }
     }
